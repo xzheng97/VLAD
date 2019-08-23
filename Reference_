@@ -1,0 +1,151 @@
+Reference:
+Jegou’s paper:
+https://hal.inria.fr/inria-00633013/document/
+Jegou’s Github:
+https://github.com/jorjasso/VLAD
+Jegou’s original dataset(Holiday): 
+http://lear.inrialpes.fr/people/jegou/data.php
+
+Further expansion and improvement on VLAD:
+Sandbox for image retrieval models and algorithms: https://github.com/osmr/imgret
+Local image descriptors into compact code: https://hal.inria.fr/file/index/docid/633013/filename/jegou_aggregate.pdf
+Revisiting VLAD image representation: https://hal.inria.fr/file/index/docid/840653/filename/nextvlad.pdf
+
+___________________________________________________________________________________
+Pre-implementation set up:
+
+conda create --name openCV-Python numpy scipy scikit-learn matplotlib python=3.5
+source activate openCV-Python
+conda install -c menpo opencv3=3.1.0
+
+docker 2e4f9b308d58 log in process:
+ssh xianjie@172.26.20.52
+sudo docker exec -it 2e4f9b308d58 /bin/bash
+
+Command Line Library:
+***Recommend to run step 1-4 on remote server/docker to save time, run step 5 locally to connect with java.***
+1. 
+Local:
+python describe.py --dataset /Users/vickyli/Downloads/jpg  --descriptor SURF  --output /Users/vickyli/desktop/Rokid/Descriptors/descriptorSURF
+
+Remote:
+python describe.py --dataset /home/vicky/Rokid/Dataset/jpg  --descriptor SURF  --output /home/vicky/Rokid/Descriptors/descriptorSURF
+
+Docker:
+python describe.py --dataset /home/rokid/vlad/Dataset/jpg  --descriptor SURF  --output /home/rokid/vlad/Descriptors/descriptorSURF
+
+python describe.py --dataset /home/rokid/vlad/Train  --descriptor SIFT  --output /home/rokid/vlad/Descriptors/trainDescriptorSIFT
+
+2.
+Local:
+python visualDictionary.py -d /Users/vickyli/desktop/Rokid/Descriptors/descriptorSURF.pickle  -w 2 -o /Users/vickyli/desktop/Rokid/VisualDictionary/visualDictionary2SURF
+
+Remote:
+python visualDictionary.py -d /home/vicky/Rokid/Descriptors/descriptorSURF.pickle  -w 3 -o /home/vicky/Rokid/VisualDictionary/visualDictionary3SURF
+
+Docker:
+python visualDictionary.py -d /home/rokid/vlad/Descriptors/descriptorSURF.pickle  -w 3 -o /home/rokid/vlad/VisualDictionary/visualDictionary3SURF
+
+python visualDictionary.py -d /home/rokid/vlad/Descriptors/trainDescriptorSIFT.pickle  -w 4 -o /home/rokid/vlad/VisualDictionary/trainVisualDictionary4SIFT
+
+3.
+Local:
+python vladDescriptors.py  -d dataset -dV /Users/vickyli/desktop/Rokid/visualDictionary/visualDictionary2SURF.pickle --descriptor SURF -o /Users/vickyli/desktop/Rokid/VLADdescriptors/VLAD_SURF_VW2
+
+Remote: 
+python vladDescriptors.py  -d /home/vicky/Rokid/Dataset/jpg -dV /home/vicky/Rokid/VisualDictionary/visualDictionary3SURF.pickle --descriptor SURF -o /home/vicky/Rokid/VLADdescriptors/VLAD_SURF_VW3
+
+Docker:
+python vladDescriptors.py  -d /home/rokid/vlad/Dataset/jpg -dV /home/rokid/vlad/VisualDictionary/visualDictionary3SURF.pickle --descriptor SURF -o /home/rokid/vlad/VLADdescriptors/VLAD_SURF_VW3
+
+python vladDescriptors.py  -d /home/rokid/vlad/Train -dV /home/rokid/vlad/VisualDictionary/trainVisualDictionary4SIFT.pickle --descriptor SIFT -o /home/rokid/vlad/VLADdescriptors/VLAD_train_SIFT_VW4
+
+4.
+Local:
+python indexBallTree.py  -d /Users/vickyli/desktop/Rokid/VLADdescriptors/VLAD_SURF_VW2.pickle -l 40 -o /Users/vickyli/desktop/Rokid/ballTreeIndexes/index_SURF_VW2
+
+Remote:
+python indexBallTree.py  -d /home/vicky/Rokid/VLADdescriptors/VLAD_SURF_VW3.pickle -l 40 -o /home/vicky/Rokid/ballTreeIndexes/index_SURF_VW3
+
+Docker:
+python indexBallTree.py  -d /home/rokid/vlad/VLADdescriptors/VLAD_SURF_VW3.pickle -l 40 -o /home/rokid/vlad/ballTreeIndexes/index_SURF_VW3
+
+python indexBallTree.py  -d /home/rokid/vlad/VLADdescriptors/VLAD_train_SIFT_VW4.pickle -l 40 -o /home/rokid/vlad/ballTreeIndexes/index_train_SIFT_VW4
+
+
+5.
+Local:
+python query.py  -q /Users/vickyli/desktop/RemoteRokid/Rokid/Dataset/jpg/113300.jpg -r 3 -d SURF -dV /Users/vickyli/desktop/RemoteRokid/Rokid/VisualDictionary/visualDictionary3SURF.pickle -i /Users/vickyli/desktop/RemoteRokid/Rokid/ballTreeIndexes/index_SURF_VW3.pickle
+
+python /Users/vickyli/Desktop/Rokid/RemoteRokid/docker_volume/vlad/VLAD-master/query.py  -q /Users/vickyli/Desktop/Rokid/RemoteRokid/docker_volume/vlad/Train/FountainB0.jpg -r 4 -d SIFT -dV /Users/vickyli/Desktop/Rokid/RemoteRokid/docker_volume/vlad/VisualDictionary/trainVisualDictionary4SIFT.pickle -i /Users/vickyli/Desktop/Rokid/RemoteRokid/docker_volume/vlad/ballTreeIndexes/index_train_SIFT_VW4.pickle
+
+
+Remote:
+python query.py  -q /home/vicky/Rokid/Dataset/jpg/113300.jpg -r 3 -d SURF -dV /home/vicky/Rokid/VisualDictionary/visualDictionary3SURF.pickle -i /home/vicky/Rokid/ballTreeIndexes/index_SURF_VW3.pickle
+
+
+Docker:
+python query.py  -q /home/rokid/vlad/Dataset/jpg/113000.jpg -r 3 -d SURF -dV /home/rokid/vlad/VisualDictionary/visualDictionary3SURF.pickle -i /home/rokid/vlad/ballTreeIndexes/index_SURF_VW3.pickle
+
+python query.py  -q /home/rokid/vlad/Train/FountainB0.jpg -r 4 -d SIFT -dV /home/rokid/vlad/VisualDictionary/trainVisualDictionary4SIFT.pickle -i /home/rokid/vlad/ballTreeIndexes/index_train_SIFT_VW4.pickle
+
+___________________________________________________________________________________
+Computing Notes/Issues/Future Improvements:
+When setting up Open CV environment on Conda using command line “conda create --name openCV-Python numpy scipy scikit-learn matplotlib python=3”
+- Solution: should set python version exactly to 3.5 instead of automating to latest version of 3 - 3.7, to prevent dependency conflicts
+
+When computing descriptors from dataset using the command line “python describe.py --dataset dataset --descriptor descriptorName --output output”, error message “OSError: [Errno 22] Invalid argument” appears when computing files exceeding 2-4GB at once
+- Solution: reducing size of dataset from 812 images to 360 images
+- Limitation: relatively small file size to compute every time, future improvement could be expanding to larger scale
+
+When constructing visual dictionary of 32 visual words using command line “python visualDictionary.py  -d descriptorPath -w numberOfVisualWords -o output”, bellow error message appears:
+- Attempt: Visual Dictionary switching lower number of VW (16, 8 or 4): 
+“Iteration 205, inertia 484860.56
+start iteration
+done sorting
+end inner loop
+Killed: 9”
+- Easiest solution: switching to fear visual words (vw of 2 end at early iteration)
+- Solution: using remote GPU server to compute for faster computation rate
+
+When trying to debug, Chris suggests me using Visual Studio Code instead of Sublime text, because in VS Code I can right click and go to where the function is defined using “Go to definition”. However, error message “ImportError: No module named…” appears because VS Code uses Python directory of /usr/bin/python from its own terminal, which is different from original directory of /anaconda3/envs/openCV-Python/bin/python that I’m using on the terminal via Anaconda
+- Easiest solution: still input commas line on original terminal and debug using VS Code
+
+When making ball tree index from VLAD descriptors using command line “python indexBallTree.py  -d VLADdescriptorPath -l leafSize -o output”, error message “ValueError: Buffer has wrong number of dimensions (expected 2, got 1)” due to “indexBallTree(V, leafSize)” function
+- Attempt: path incorrect due to empty V value, try redo computing process
+- Solution: setting right dataset path after -d in command line for step 3 computing vlad Descriptors and changing “!=”to “is not” in VLAD.py
+
+When doing image query, bellow error message appears: “ValueError: Expected 2D array, got 1D array instead: array=[ 0.0094101 … -0.02755605]. Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.” 
+- Solution: Error appeared on Issues thread on Github whose solution updates query function
+
+When doing rage query, error message bellow appears:
+(Result:19194): Gtk-WARNING **: 14:35:16.170: cannot open display: 
+- Solution: using docker 2e4f9b308d58 provided by Xianjie
+
+In preparation in using Rokid’s own dataset, switching file name from dates to folder name to include its label.
+
+Java to Python:
+- Limitation: restricted to only one argument (query image path), other arguments stored in query.py
+- Further improvement: Dist value in query.py could be used as threshold to determine image type or “NoPlace”
+- Comparison with BOW by taking new pictures and testing query accuracy
+
+Limitation:
+- java class timeout
+- need to exit the app and return before retaking every picture
+
+
+640x480 image uncolored
+
+scp -r /Users/vickyli/Desktop/Rokid/RokidDataset/RLabOffice/Train xianjie@172.26.20.52:/home/xianjie/vlad
+scp -r /Users/vickyli/Desktop/Rokid/RokidDataset/RLabOffice/Train xianjie@172.26.20.52:/dev/docker_volume/vlad
+
+
+To-do:
+- java connection:
+- byte to jpg transformation
+- input from path to object (query.py) imread
+- output string
+
+- string output
+- photo new images with Samsung
+- scoring (dis value)
